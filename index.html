@@ -1,0 +1,638 @@
+<title>What Should I Eat?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one centered column. Questions are big tap tiles; the answer prints as a diner order ticket. */
+:root {
+  --bg: #E8F2EC;
+  --surface: #FFFFFF;
+  --ink: #17201C;
+  --muted: #53635C;
+  --line: #C5D8CE;
+  --ketchup: #D3382A;
+  --ketchup-ink: #FFFFFF;
+  --mustard: #EFB02E;
+  --mustard-soft: #FBE6B0;
+  --paper: #FFFDF7;
+  --paper-ink: #201E1A;
+  --paper-muted: #6B655C;
+  --paper-line: #D8D0C0;
+  --shadow: rgba(23, 32, 28, 0.16);
+
+  --font-display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --step--1: 0.85rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.6rem;
+  --step-3: clamp(2rem, 6vw, 2.7rem);
+  --step-4: clamp(2.6rem, 9vw, 4.2rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1513;
+    --surface: #18201D;
+    --ink: #E8F0EC;
+    --muted: #93A39C;
+    --line: #2B3732;
+    --ketchup: #FF5C48;
+    --ketchup-ink: #1B0D0A;
+    --mustard: #F4C24F;
+    --mustard-soft: #3A311B;
+    --shadow: rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1513;
+  --surface: #18201D;
+  --ink: #E8F0EC;
+  --muted: #93A39C;
+  --line: #2B3732;
+  --ketchup: #FF5C48;
+  --ketchup-ink: #1B0D0A;
+  --mustard: #F4C24F;
+  --mustard-soft: #3A311B;
+  --shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
+.brand {
+  font-family: var(--font-display); font-size: 1.25rem; color: var(--ink);
+  background: none; border: 0; padding: 4px 0; cursor: pointer; letter-spacing: 0.01em;
+}
+.brand span { color: var(--ketchup); }
+.count { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); letter-spacing: 0.04em; }
+
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--mustard); outline-offset: 3px; border-radius: 10px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; border-radius: 999px; border: 2px solid var(--ink);
+  background: var(--surface); color: var(--ink); font-weight: 650; font-size: var(--step-0);
+  cursor: pointer; text-decoration: none; line-height: 1.2;
+  transition: transform .12s ease, background-color .12s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--ketchup); border-color: var(--ketchup); color: var(--ketchup-ink); }
+.btn.quiet { border-color: var(--line); }
+.btn.link { border: 0; background: none; padding: 8px 4px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Intro */
+.intro { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; padding-top: 8px; }
+@media (min-width: 640px) { .intro { grid-template-columns: 1.25fr 1fr; } }
+.intro h1 {
+  font-family: var(--font-display); font-weight: 400; font-size: var(--step-4);
+  line-height: 0.98; margin: 0 0 16px; text-wrap: balance;
+}
+.intro h1 em { font-style: normal; color: var(--ketchup); }
+.intro p { margin: 0 0 24px; color: var(--muted); font-size: var(--step-1); max-width: 34ch; }
+.intro .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.example-label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; text-align: center; }
+.mini { transform: rotate(2.5deg); max-width: 280px; margin: 0 auto; width: 100%; }
+.mini .ticket { padding: 22px 18px; }
+.mini .dish { font-size: 1.9rem; }
+
+/* Question */
+.progress { display: flex; gap: 4px; }
+.progress i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
+.progress i.done { background: var(--ketchup); }
+.progress i.now { background: var(--mustard); }
+.q { display: flex; flex-direction: column; gap: 20px; animation: slide .22s ease both; }
+.q h2 { font-size: var(--step-3); line-height: 1.08; font-weight: 750; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.q .hint { margin: -10px 0 0; color: var(--muted); }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; }
+.opt {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  text-align: left; padding: 14px 44px 14px 16px; min-height: 64px;
+  border: 2px solid var(--line); border-radius: 14px; background: var(--surface);
+  cursor: pointer; transition: border-color .12s ease, background-color .12s ease, transform .12s ease;
+}
+.opt:hover { border-color: var(--ink); }
+.opt:active { transform: scale(.985); }
+.opt b { font-weight: 680; font-size: var(--step-1); line-height: 1.2; }
+.opt small { color: var(--muted); font-size: var(--step--1); }
+.opt kbd {
+  position: absolute; top: 10px; right: 12px; font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; background: transparent;
+}
+.opt[aria-pressed="true"] { border-color: var(--ink); background: var(--mustard-soft); }
+.opt[aria-pressed="true"] kbd { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.opt.nopref { border-style: dashed; background: transparent; }
+.opt.nopref b { font-size: var(--step-0); color: var(--muted); }
+.q-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.keys { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+@media (hover: none) { .keys, .opt kbd { display: none; } .opt { padding-right: 16px; } }
+
+/* Ticket */
+.ticket-wrap { filter: drop-shadow(0 12px 18px var(--shadow)); }
+.ticket {
+  --r: 7px;
+  background: var(--paper); color: var(--paper-ink); font-family: var(--font-mono);
+  padding: 30px 24px; display: flex; flex-direction: column; gap: 14px;
+  -webkit-mask:
+    radial-gradient(circle var(--r) at 50% 0, transparent 97%, #000) 50% 0 / calc(var(--r) * 2.6) 51% repeat-x,
+    radial-gradient(circle var(--r) at 50% 100%, transparent 97%, #000) 50% 100% / calc(var(--r) * 2.6) 51% repeat-x;
+          mask:
+    radial-gradient(circle var(--r) at 50% 0, transparent 97%, #000) 50% 0 / calc(var(--r) * 2.6) 51% repeat-x,
+    radial-gradient(circle var(--r) at 50% 100%, transparent 97%, #000) 50% 100% / calc(var(--r) * 2.6) 51% repeat-x;
+}
+.t-row { display: flex; justify-content: space-between; gap: 12px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-muted); }
+.t-row strong { color: var(--paper-ink); font-weight: 500; }
+.t-sep { border-top: 2px dashed var(--paper-line); }
+.eyebrow { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--paper-muted); }
+.dish { font-family: var(--font-display); font-weight: 400; font-size: clamp(2.2rem, 8vw, 3.2rem); line-height: 1; margin: 2px 0 0; text-wrap: balance; color: var(--paper-ink); }
+.sub { font-size: 0.85rem; color: var(--paper-muted); }
+.blurb { font-family: var(--font-body); font-size: var(--step-1); line-height: 1.4; margin: 0; }
+.specs { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; font-size: 0.85rem; margin: 0; }
+.specs dt { color: var(--paper-muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.75rem; padding-top: 2px; }
+.specs dd { margin: 0; }
+.dots { display: inline-flex; gap: 4px; vertical-align: middle; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--paper-line); }
+.dots i.on { background: var(--ketchup); border-color: var(--ketchup); }
+.why { display: flex; flex-wrap: wrap; gap: 6px; }
+.why span { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; border: 1.5px solid var(--paper-ink); border-radius: 4px; padding: 2px 7px; }
+.eightysix { font-size: 0.8rem; color: var(--paper-muted); }
+.eightysix s { color: var(--paper-muted); }
+.result { display: flex; flex-direction: column; gap: 20px; }
+.result .ticket-wrap { animation: print .45s cubic-bezier(.2,.8,.3,1) both; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.result-actions .grow { flex: 1 1 200px; }
+
+.alts h3 { font-size: 0.78rem; font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 8px 0 10px; }
+.alt-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 10px; }
+.alt {
+  display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 12px 14px;
+  border: 2px solid var(--line); border-radius: 14px; background: var(--surface); cursor: pointer;
+}
+.alt:hover { border-color: var(--ink); }
+.alt b { font-weight: 680; }
+.alt small { color: var(--muted); }
+.empty { text-align: center; padding: 32px 0; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.empty h2 { font-family: var(--font-display); font-weight: 400; font-size: var(--step-3); margin: 0; }
+.empty p { margin: 0; color: var(--muted); }
+
+@keyframes slide { from { transform: translateX(14px); } to { transform: none; } }
+@keyframes print { from { transform: translateY(-18px) scaleY(.96); transform-origin: top; } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="topbar">
+    <button class="brand" id="home" type="button">what should I <span>eat?</span></button>
+    <span class="count" id="count"></span>
+  </header>
+  <main id="app" aria-live="polite"></main>
+</div>
+
+<script>
+(() => {
+  // ---------- Labels ----------
+  const FLAVOR = { savory: "Savory", cheesy: "Cheesy", spicy: "Spicy", tangy: "Tangy", sweet: "Sweet", smoky: "Smoky", garlicky: "Garlicky", fresh: "Fresh & herby" };
+  const TEXTURE = { crispy: "Crispy", saucy: "Saucy", chewy: "Noodly", soupy: "Soupy" };
+  const BASE = { noodles: "Noodles", rice: "Rice", bread: "Bread", greens: "Greens" };
+  const PROTEIN = { chicken: "chicken", red: "beef or lamb", pork: "pork", seafood: "seafood", veggie: "tofu or veggies" };
+
+  // ---------- Questions ----------
+  const Q = [
+    { id: "hunger", q: "How hungry are you?", opts: [
+      { v: 1, l: "Snacky", s: "Just a little something" },
+      { v: 2, l: "Properly hungry", s: "A normal meal" },
+      { v: 3, l: "Starving", s: "Feed me immediately" } ] },
+    { id: "weight", q: "Light or heavy?", opts: [
+      { v: 1, l: "Light & fresh", s: "Salads, poke, broth" },
+      { v: 2, l: "In between", s: "Filling, but no food coma" },
+      { v: 3, l: "Heavy & comforting", s: "Cheese, carbs, sauce" } ] },
+    { id: "flavors", multi: true, q: "Which flavors are calling you?", hint: "Pick as many as you like.", opts:
+      Object.entries(FLAVOR).map(([v, l]) => ({ v, l, s: {
+        savory: "Salty, rich, meaty", cheesy: "Melty and gooey", spicy: "Chili and heat", tangy: "Lime, vinegar, pickles",
+        sweet: "Glazes and syrups", smoky: "Grilled, charred, BBQ", garlicky: "All the garlic", fresh: "Herbs, citrus, crunch" }[v] })) },
+    { id: "spice", q: "How much heat can you handle tonight?", opts: [
+      { v: 0, l: "None at all", s: "Keep it mild" },
+      { v: 1, l: "A little kick", s: "Some warmth is nice" },
+      { v: 2, l: "Bring the heat", s: "Make my nose run" } ] },
+    { id: "temp", q: "Hot food or cold food?", opts: [
+      { v: "h", l: "Something hot", s: "Warm and steamy" },
+      { v: "c", l: "Something cold", s: "Crisp and cool" } ] },
+    { id: "texture", q: "What texture sounds best?", opts: [
+      { v: "crispy", l: "Crispy & crunchy", s: "Fried, toasted, golden" },
+      { v: "saucy", l: "Creamy & saucy", s: "Something to mop up" },
+      { v: "chewy", l: "Chewy & noodly", s: "Slurpable" },
+      { v: "soupy", l: "Soupy", s: "A big warm bowl" } ] },
+    { id: "base", q: "Pick a base.", opts: [
+      { v: "noodles", l: "Noodles or pasta", s: "Ramen to rigatoni" },
+      { v: "rice", l: "Rice", s: "Bowls, curries, sushi" },
+      { v: "bread", l: "Bread or tortillas", s: "Buns, wraps, pizza" },
+      { v: "greens", l: "Greens", s: "Salad as the main event" } ] },
+    { id: "protein", q: "Any protein in mind?", opts: [
+      { v: "chicken", l: "Chicken", s: "Fried, grilled, curried" },
+      { v: "red", l: "Beef or lamb", s: "Burgers, steak, stews" },
+      { v: "pork", l: "Pork", s: "Bacon, ribs, pastor" },
+      { v: "seafood", l: "Fish & seafood", s: "Salmon, shrimp, sushi" },
+      { v: "veggie", l: "Veggie or tofu", s: "No meat needed" } ] },
+    { id: "adventure", q: "Old favorite or something new?", opts: [
+      { v: 0, l: "Old favorite", s: "Something I know I love" },
+      { v: 1, l: "Something new", s: "Surprise my taste buds" } ] },
+    { id: "method", q: "How is this food getting to you?", opts: [
+      { v: "home", l: "Cooking at home", s: "Keep it doable" },
+      { v: "order", l: "Ordering in", s: "Couch, sweatpants" },
+      { v: "out", l: "Going out", s: "Make an evening of it" } ] },
+    { id: "diet", multi: true, q: "Anything off the table?", hint: "Hard no's only. Leave it empty if anything goes.", opts: [
+      { v: "noMeat", l: "No meat", s: "Vegetarian tonight" },
+      { v: "noSeafood", l: "No seafood", s: "Nothing from the sea" },
+      { v: "noDairy", l: "No dairy", s: "Skip the cheese and cream" },
+      { v: "noGluten", l: "No gluten", s: "No wheat bread or pasta" } ] },
+  ];
+
+  // ---------- Dishes ----------
+  // name, cuisine, weight 1-3, portion 1-3, flavors, spice 0-2, temp h/c, textures, base, proteins, d=dairy g=gluten, novelty 0-2, home effort 1-3, blurb
+  const RAW = [
+    ["Margherita pizza","Italian",2,2,"cheesy,savory,fresh",0,"h","chewy,crispy","bread","veggie","dg",0,2,"Blistered crust, bright tomato, fresh mozzarella and basil."],
+    ["Pepperoni pizza","Italian-American",3,3,"cheesy,savory,smoky",1,"h","crispy,chewy","bread","pork","dg",0,2,"Crispy cupped pepperoni and a long cheese pull."],
+    ["Cheeseburger & fries","American",3,3,"savory,cheesy,smoky",0,"h","crispy","bread","red,veggie","dg",0,2,"A smashed patty, melty cheese, pickles and a pile of fries."],
+    ["Mac and cheese","American",3,2,"cheesy,savory",0,"h","saucy","noodles","veggie","dg",0,1,"Baked until bubbly, with a crunchy breadcrumb top."],
+    ["Chicken tikka masala","Indian",3,3,"savory,spicy,garlicky",1,"h","saucy","rice","chicken,veggie","d",1,2,"Charred chicken in creamy tomato sauce, with naan to mop it up."],
+    ["Pad thai","Thai",2,2,"savory,sweet,tangy",1,"h","chewy","noodles","chicken,seafood,veggie","",1,2,"Rice noodles with tamarind, peanuts, bean sprouts and lime."],
+    ["Pho","Vietnamese",2,2,"savory,fresh",0,"h","soupy,chewy","noodles","red,chicken","",1,3,"Long-simmered broth, rice noodles and a heap of fresh herbs."],
+    ["Tonkotsu ramen","Japanese",3,3,"savory,garlicky",0,"h","soupy,chewy","noodles","pork,veggie","g",1,3,"Rich pork broth, springy noodles and a jammy egg."],
+    ["Sushi","Japanese",1,2,"fresh,savory,tangy",0,"c","chewy","rice","seafood,veggie","",1,3,"Rolls and nigiri with plenty of ginger and wasabi."],
+    ["Poke bowl","Hawaiian",1,2,"fresh,savory,tangy",0,"c","chewy","rice","seafood,veggie","",1,1,"Marinated fish over rice with avocado, cucumber and crunchy toppings."],
+    ["Chicken Caesar salad","Italian-American",1,1,"savory,garlicky,cheesy,tangy",0,"c","crispy","greens","chicken,veggie","dg",0,1,"Crisp romaine, garlicky dressing, parmesan and croutons."],
+    ["Greek salad & pita","Greek",1,1,"fresh,tangy",0,"c","crispy","greens","veggie","dg",0,1,"Tomato, cucumber, olives and feta, with warm pita on the side."],
+    ["Tacos al pastor","Mexican",2,2,"savory,spicy,smoky,sweet",1,"h","crispy","bread","pork","",1,2,"Spit-roasted pork, pineapple, onion and cilantro on corn tortillas."],
+    ["Burrito bowl","Mexican",2,3,"savory,smoky,fresh",1,"h","saucy","rice","chicken,red,veggie","d",0,1,"Rice, beans, salsa, guac and whatever protein you like."],
+    ["Birria tacos","Mexican",3,3,"savory,spicy,cheesy,smoky",1,"h","crispy,soupy","bread","red","d",2,3,"Cheesy crisped tacos dunked in rich beef consommé."],
+    ["Quesadilla","Mexican",2,2,"cheesy,savory",0,"h","crispy","bread","chicken,veggie","dg",0,1,"Golden tortilla, molten cheese, salsa and sour cream."],
+    ["Loaded nachos","Tex-Mex",3,2,"cheesy,savory,spicy",1,"h","crispy","none","red,veggie","d",0,1,"Chips under a landslide of cheese, beans, jalapeños and salsa."],
+    ["Fried chicken & biscuits","Southern",3,3,"savory",0,"h","crispy","bread","chicken","dg",0,3,"Crackly buttermilk chicken and flaky biscuits with honey."],
+    ["Korean fried chicken","Korean",3,2,"sweet,spicy,garlicky",1,"h","crispy","none","chicken","g",1,3,"Double-fried and glazed in sweet, sticky gochujang."],
+    ["Bibimbap","Korean",2,2,"savory,spicy,fresh",1,"h","crispy,chewy","rice","red,veggie","",1,2,"Rice, veggies, a fried egg and gochujang, crisped in a hot stone bowl."],
+    ["Kimchi jjigae","Korean",2,2,"spicy,tangy,savory",2,"h","soupy","rice","pork,veggie","",2,2,"Bubbling kimchi stew with tofu and pork. Funky in the best way."],
+    ["Spaghetti carbonara","Italian",3,2,"savory,cheesy",0,"h","saucy,chewy","noodles","pork","dg",0,2,"Egg, pecorino, black pepper and crispy guanciale."],
+    ["Spaghetti & meatballs","Italian-American",3,3,"savory,garlicky,tangy",0,"h","saucy,chewy","noodles","red","dg",0,2,"Big meatballs in red sauce, with garlic bread on the side."],
+    ["Pesto pasta","Italian",2,2,"fresh,garlicky,cheesy",0,"h","saucy,chewy","noodles","veggie,chicken","dg",0,1,"Basil, pine nuts and parmesan tossed with pasta."],
+    ["Shrimp scampi","Italian-American",2,2,"garlicky,savory,tangy",0,"h","saucy,chewy","noodles","seafood","dg",0,1,"Shrimp in garlic butter, white wine and lemon over linguine."],
+    ["Lasagna","Italian",3,3,"cheesy,savory",0,"h","saucy","noodles","red,veggie","dg",0,3,"Layers of pasta, ragù, ricotta and browned cheese."],
+    ["Chicken noodle soup","American",1,1,"savory,fresh",0,"h","soupy","noodles","chicken","g",0,2,"Clear broth, tender chicken and soft noodles. A hug in a bowl."],
+    ["Tomato soup & grilled cheese","American",2,2,"cheesy,tangy,savory",0,"h","soupy,crispy","bread","veggie","dg",0,1,"Made for dunking."],
+    ["Chana masala","Indian",2,2,"spicy,tangy,savory,garlicky",1,"h","saucy","rice","veggie","",1,2,"Chickpeas in a tangy, spiced tomato gravy."],
+    ["Lamb biryani","Indian",3,3,"spicy,savory,smoky",1,"h","","rice","red,chicken","d",2,3,"Fragrant layered rice with saffron, fried onions and tender lamb."],
+    ["Thai green curry","Thai",2,2,"spicy,sweet,fresh",2,"h","saucy,soupy","rice","chicken,seafood,veggie","",1,2,"Coconut curry with Thai basil and a serious kick."],
+    ["General Tso's chicken","Chinese-American",3,2,"sweet,spicy,savory",1,"h","crispy,saucy","rice","chicken,veggie","g",0,2,"Crispy chicken in a glossy sweet-hot sauce."],
+    ["Potstickers","Chinese",2,1,"savory,garlicky",0,"h","crispy,chewy","none","pork,veggie","g",0,3,"Pan-fried dumplings with crisp bottoms and a dipping sauce."],
+    ["Mapo tofu","Sichuan",2,2,"spicy,savory,garlicky",2,"h","saucy","rice","pork,veggie","",2,2,"Silky tofu in a numbing, chili-red sauce."],
+    ["Dan dan noodles","Sichuan",2,2,"spicy,savory,garlicky",2,"h","chewy","noodles","pork","g",2,2,"Noodles with chili oil, sesame and crispy minced pork."],
+    ["Fried rice","Chinese",2,2,"savory,garlicky",0,"h","chewy","rice","chicken,pork,seafood,veggie","",0,1,"Wok-tossed rice with egg, scallion and whatever is in the fridge."],
+    ["Chicken shawarma wrap","Middle Eastern",2,2,"savory,garlicky,tangy,smoky",0,"h","crispy","bread","chicken","g",1,2,"Spiced chicken, garlic sauce and pickles, wrapped and toasted."],
+    ["Falafel plate","Middle Eastern",2,2,"fresh,garlicky,savory,tangy",0,"h","crispy","bread","veggie","g",1,2,"Crisp falafel with hummus, tahini, salad and pita."],
+    ["Shakshuka","North African",2,1,"tangy,spicy,savory",1,"h","saucy","bread","veggie","g",1,1,"Eggs poached in spiced tomato sauce, with crusty bread."],
+    ["Fish & chips","British",3,3,"savory,tangy",0,"h","crispy","none","seafood","g",0,3,"Battered fish, thick chips, malt vinegar and tartar sauce."],
+    ["Grilled salmon & veggies","Modern American",1,2,"fresh,savory,garlicky",0,"h","","none","seafood","",0,1,"Simple, bright and light. Lemon on everything."],
+    ["Steak frites","French",3,3,"savory,garlicky",0,"h","crispy","none","red","d",0,2,"Seared steak, herb butter and a tangle of crispy fries."],
+    ["BBQ ribs & cornbread","Southern",3,3,"smoky,sweet,savory",0,"h","chewy","bread","pork","dg",0,3,"Sticky, smoky ribs that fall off the bone."],
+    ["Pulled pork sandwich","Southern",3,3,"smoky,sweet,tangy",0,"h","saucy","bread","pork","g",0,3,"Slow-smoked pork with tangy slaw on a soft bun."],
+    ["Club sandwich","American",2,2,"savory,smoky,fresh",0,"c","crispy","bread","chicken,pork","g",0,1,"Triple-decker with turkey, bacon, lettuce and tomato."],
+    ["Bánh mì","Vietnamese",2,2,"tangy,fresh,spicy,savory",1,"c","crispy","bread","pork,chicken,veggie","g",1,2,"Crackly baguette, pickled veggies, cilantro and chili."],
+    ["Cold soba noodles","Japanese",1,1,"fresh,savory,tangy",0,"c","chewy","noodles","veggie","g",2,1,"Chilled buckwheat noodles with a dipping sauce. Very refreshing."],
+    ["Tom yum soup","Thai",1,1,"spicy,tangy,fresh",2,"h","soupy","none","seafood,chicken","",2,2,"Hot and sour broth with lemongrass, lime leaf and shrimp."],
+    ["Mushroom risotto","Italian",3,2,"cheesy,savory,garlicky",0,"h","saucy","rice","veggie","d",1,2,"Creamy, slow-stirred rice with mushrooms and parmesan."],
+    ["Paella","Spanish",2,3,"savory,smoky",0,"h","crispy","rice","seafood,chicken","",2,3,"Saffron rice with a crisp bottom, loaded with seafood."],
+    ["Chicken parm","Italian-American",3,3,"cheesy,savory,tangy",0,"h","crispy,saucy","noodles","chicken","dg",0,2,"Breaded cutlet, red sauce and melted mozzarella, with spaghetti."],
+    ["Pancakes for dinner","Diner",2,2,"sweet",0,"h","","bread","veggie","dg",0,1,"A tall stack with butter and maple syrup. No rules tonight."],
+    ["Chilaquiles","Mexican",2,2,"spicy,tangy,cheesy",1,"h","crispy,saucy","none","chicken,veggie","d",2,2,"Tortilla chips simmered in salsa, topped with egg, crema and cheese."],
+    ["Açaí bowl","Brazilian",1,1,"sweet,fresh",0,"c","","none","veggie","",1,1,"Frozen açaí blended thick and topped with fruit and granola."],
+    ["Chili","Tex-Mex",3,3,"spicy,smoky,savory",1,"h","soupy,saucy","none","red,veggie","d",0,2,"A big pot of chili with cheese, sour cream and cornbread."],
+    ["Mediterranean grain bowl","Mediterranean",1,2,"fresh,tangy,garlicky",0,"c","crispy","greens","chicken,veggie","d",0,1,"Grains, greens, hummus, roasted veg and a lemony dressing."],
+    ["Teriyaki chicken bowl","Japanese",2,2,"sweet,savory",0,"h","","rice","chicken,seafood","g",0,1,"Glazed chicken over rice with steamed greens."],
+    ["Kitsune udon","Japanese",2,2,"savory,sweet",0,"h","soupy,chewy","noodles","veggie","g",1,1,"Thick udon in dashi broth with sweet fried tofu."],
+    ["Ceviche","Peruvian",1,1,"tangy,fresh,spicy",1,"c","","none","seafood","",2,2,"Raw fish cured in lime with chili, red onion and cilantro."],
+    ["Jollof rice & chicken","West African",2,3,"spicy,smoky,savory",1,"h","","rice","chicken","",2,2,"Smoky tomato rice with grilled chicken and fried plantains."],
+    ["Doro wat & injera","Ethiopian",3,3,"spicy,savory",2,"h","saucy","bread","chicken","g",2,3,"Berbere-spiced chicken stew, scooped up with spongy injera."],
+    ["Loaded baked potato","American",3,2,"cheesy,savory,smoky",0,"h","saucy","none","pork,veggie","d",0,1,"Butter, cheddar, sour cream, bacon and chives."],
+    ["Avocado toast & eggs","Café",1,1,"fresh,savory",0,"h","crispy","bread","veggie","g",0,1,"Sourdough, smashed avocado, chili flakes and a runny egg."],
+    ["Chicken & waffles","Southern",3,3,"sweet,savory",0,"h","crispy","bread","chicken","dg",1,3,"Fried chicken on a waffle with a drizzle of hot honey."],
+    ["Gazpacho","Spanish",1,1,"fresh,tangy",0,"c","soupy","none","veggie","g",1,1,"Chilled tomato soup with cucumber, peppers and good olive oil."],
+  ];
+  const split = s => s ? s.split(",") : [];
+  const DISHES = RAW.map(r => ({
+    n: r[0], c: r[1], w: r[2], h: r[3], f: split(r[4]), s: r[5], t: r[6], x: split(r[7]),
+    b: r[8], p: split(r[9]), dairy: r[10].includes("d"), gluten: r[10].includes("g"), a: r[11], e: r[12], blurb: r[13],
+  }));
+
+  // ---------- State ----------
+  const state = { step: -1, A: { flavors: [], diet: [] }, ranked: [], vetoed: [], random: false, ticketNo: 0, stamp: "" };
+  const app = document.getElementById("app");
+  const count = document.getElementById("count");
+  const isSet = v => v !== undefined && v !== null;
+
+  // ---------- Scoring ----------
+  function eligible(d, diet) {
+    if (diet.includes("noMeat") && !d.p.includes("veggie")) return false;
+    if (diet.includes("noSeafood") && !d.p.some(p => p !== "seafood")) return false;
+    if (diet.includes("noDairy") && d.dairy) return false;
+    if (diet.includes("noGluten") && d.gluten) return false;
+    return true;
+  }
+
+  function score(d, A) {
+    let s = 0;
+    const why = [];
+    if (isSet(A.weight)) {
+      const diff = Math.abs(d.w - A.weight);
+      s += 16 - 9 * diff;
+      if (!diff) why.push(["light", "middle-weight", "heavy & comforting"][d.w - 1]);
+    }
+    if (isSet(A.hunger)) {
+      const diff = Math.abs(d.h - A.hunger);
+      s += 10 - 6 * diff;
+      if (!diff && A.hunger === 1) why.push("snack-sized");
+      if (!diff && A.hunger === 3) why.push("big portion");
+    }
+    if (A.flavors.length) {
+      const hit = A.flavors.filter(f => d.f.includes(f));
+      s += 9 * hit.length - 3 * (A.flavors.length - hit.length);
+      if (!A.flavors.includes(d.f[0])) s -= 4;
+      hit.forEach(f => why.push(FLAVOR[f]));
+    }
+    if (isSet(A.spice)) {
+      if (d.s > A.spice) s -= 14 * (d.s - A.spice);
+      else if (A.spice === 2 && d.s === 2) { s += 8; why.push("real heat"); }
+      else if (A.spice === 2 && d.s === 0) s -= 5;
+    }
+    if (isSet(A.temp)) {
+      if (d.t === A.temp) { s += 5; why.push(d.t === "h" ? "served hot" : "served cold"); }
+      else s -= 14;
+    }
+    if (isSet(A.texture)) {
+      if (d.x.includes(A.texture)) { s += 10; why.push(TEXTURE[A.texture]); } else s -= 3;
+    }
+    if (isSet(A.base)) {
+      if (d.b === A.base) { s += 11; why.push(BASE[A.base]); } else s -= 4;
+    }
+    if (isSet(A.protein)) {
+      if (d.p.includes(A.protein)) { s += 11; why.push(A.protein === "veggie" ? "veggie" : PROTEIN[A.protein]); } else s -= 8;
+    }
+    if (isSet(A.adventure)) {
+      if (A.adventure === 0) { s += 6 - 5 * d.a; if (d.a === 0) why.push("a classic"); }
+      else { s += 5 * d.a - 3; if (d.a === 2) why.push("something new"); }
+    }
+    if (A.method === "home") { s += 6 - 4 * d.e; if (d.e === 1) why.push("easy to make"); }
+    if (A.method === "order" && d.e >= 2) s += 2;
+    if (A.method === "out") s += (d.e >= 2 ? 3 : 0) + d.a;
+    return { s, why: [...new Set(why)] };
+  }
+
+  function rank() {
+    const A = state.A;
+    let pool = DISHES.filter(d => eligible(d, A.diet));
+    if (!pool.length) pool = DISHES.slice();
+    const jitter = state.random ? 100 : 4;
+    state.ranked = pool
+      .map(d => { const r = score(d, A); return { d, why: r.why, s: r.s + Math.random() * jitter }; })
+      .sort((x, y) => y.s - x.s);
+    state.ticketNo = Math.floor(100 + Math.random() * 900);
+    const now = new Date();
+    state.stamp = now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) +
+      " · " + now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  }
+
+  const live = () => state.ranked.filter(r => !state.vetoed.includes(r.d));
+
+  // ---------- Rendering helpers ----------
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const dots = n => `<span class="dots" aria-hidden="true">${[0, 1, 2].map(i => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</span>`;
+
+  function proteinNote(d) {
+    if (d.p.length < 2) return "";
+    const A = state.A;
+    let pick = null;
+    if (isSet(A.protein) && d.p.includes(A.protein)) pick = A.protein;
+    else if (A.diet.includes("noMeat")) pick = "veggie";
+    return pick ? ` · Get it with ${PROTEIN[pick]}` : "";
+  }
+
+  function ticketHTML(r, opts = {}) {
+    const d = r.d;
+    const heat = ["Mild", "Medium", "Hot"][d.s];
+    const heft = ["Light", "Medium", "Heavy"][d.w - 1];
+    const effort = ["Easy", "Some effort", "A project"][d.e - 1];
+    const why = r.why.slice(0, 5);
+    const vetoed = opts.vetoed || [];
+    return `
+      <div class="ticket-wrap"><article class="ticket">
+        <div class="t-row"><strong>Order up</strong><span>No. ${opts.no ?? "042"}</span></div>
+        <div class="t-row"><span>${esc(opts.stamp || "Tonight")}</span><span>Party of 1</span></div>
+        <div class="t-sep"></div>
+        <div>
+          <div class="eyebrow">${opts.example ? "For example" : "Tonight you're eating"}</div>
+          <h2 class="dish">${esc(d.n)}</h2>
+          <div class="sub">${esc(d.c)}${proteinNote(d)}</div>
+        </div>
+        ${opts.example ? "" : `<p class="blurb">${esc(d.blurb)}</p>`}
+        <div class="t-sep"></div>
+        <dl class="specs">
+          <dt>Heat</dt><dd>${dots(d.s + 1)} ${heat}</dd>
+          <dt>Heft</dt><dd>${dots(d.w)} ${heft}</dd>
+          ${opts.example ? "" : `<dt>At home</dt><dd>${dots(d.e)} ${effort}</dd>`}
+        </dl>
+        ${why.length ? `<div class="t-sep"></div><div class="eyebrow">Because you wanted</div><div class="why">${why.map(w => `<span>${esc(w)}</span>`).join("")}</div>` : ""}
+        ${vetoed.length ? `<div class="t-sep"></div><div class="eightysix">86'd: ${vetoed.map(v => `<s>${esc(v.n)}</s>`).join(", ")}</div>` : ""}
+      </article></div>`;
+  }
+
+  // ---------- Screens ----------
+  function renderIntro() {
+    count.textContent = "";
+    const sample = { d: DISHES.find(d => d.n === "Pad thai"), why: ["Tangy", "Sweet", "Noodly"] };
+    app.innerHTML = `
+      <section class="intro">
+        <div>
+          <h1>What should I <em>eat?</em></h1>
+          <p>${Q.length} quick questions about flavor, heat and how heavy you want to go. One answer at the end.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-act="start">Start</button>
+            <button class="btn quiet" type="button" data-act="random">Just pick for me</button>
+          </div>
+        </div>
+        <div>
+          <div class="example-label">What you'll get</div>
+          <div class="mini">${ticketHTML(sample, { example: true, no: "042", stamp: "Tonight" })}</div>
+        </div>
+      </section>`;
+  }
+
+  function renderQuestion() {
+    const q = Q[state.step];
+    const A = state.A;
+    count.textContent = `${state.step + 1} / ${Q.length}`;
+    const progress = Q.map((_, i) => `<i class="${i < state.step ? "done" : i === state.step ? "now" : ""}"></i>`).join("");
+    const pressed = (o) => q.multi ? A[q.id].includes(o.v) : A[q.id] === o.v;
+    let tiles = q.opts.map((o, i) => `
+      <button class="opt" type="button" data-i="${i}" aria-pressed="${pressed(o)}">
+        <b>${esc(o.l)}</b><small>${esc(o.s)}</small><kbd>${i + 1}</kbd>
+      </button>`).join("");
+    if (!q.multi) {
+      const n = q.opts.length + 1;
+      tiles += `<button class="opt nopref" type="button" data-i="-1" aria-pressed="${A[q.id] === null}">
+        <b>No preference</b><small>Either is fine</small><kbd>${n}</kbd></button>`;
+    }
+    const answered = q.multi ? true : A[q.id] !== undefined;
+    let nextLabel = "Next";
+    if (q.multi && !A[q.id].length) nextLabel = q.id === "diet" ? "Nothing, show me" : "Skip";
+    else if (state.step === Q.length - 1) nextLabel = "Show me";
+    app.innerHTML = `
+      <section class="q" aria-label="Question ${state.step + 1} of ${Q.length}">
+        <div class="progress" aria-hidden="true">${progress}</div>
+        <h2>${esc(q.q)}</h2>
+        ${q.hint ? `<p class="hint">${esc(q.hint)}</p>` : ""}
+        <div class="opts">${tiles}</div>
+        <div class="q-nav">
+          <button class="btn link" type="button" data-act="back">${state.step === 0 ? "Back to start" : "Back"}</button>
+          <span class="keys">${q.multi ? "Number keys toggle · Enter continues" : "Press a number to choose"}</span>
+          ${answered ? `<button class="btn ${q.multi ? "primary" : "quiet"}" type="button" data-act="next">${nextLabel}</button>` : `<span></span>`}
+        </div>
+      </section>`;
+  }
+
+  function renderResult() {
+    count.textContent = state.random ? "Random pick" : "Done";
+    const list = live();
+    if (!list.length) {
+      app.innerHTML = `
+        <section class="empty">
+          <h2>You 86'd everything.</h2>
+          <p>Nothing left on the menu. Try different answers, or just get pizza.</p>
+          <button class="btn primary" type="button" data-act="restart">Start over</button>
+        </section>`;
+      return;
+    }
+    const top = list[0];
+    const alts = list.slice(1, 4);
+    const q = encodeURIComponent;
+    const method = state.A.method;
+    const nearby = `<a class="btn ${method === "home" ? "quiet" : "primary"} grow" href="https://www.google.com/maps/search/${q(top.d.n + " near me")}" target="_blank" rel="noopener">Find it nearby ↗</a>`;
+    const recipe = `<a class="btn ${method === "home" ? "primary" : "quiet"} grow" href="https://www.google.com/search?q=${q(top.d.n + " recipe")}" target="_blank" rel="noopener">Find a recipe ↗</a>`;
+    app.innerHTML = `
+      <section class="result">
+        ${ticketHTML(top, { no: state.ticketNo, stamp: state.stamp, vetoed: state.vetoed })}
+        <div class="result-actions">
+          ${method === "home" ? recipe + nearby : nearby + recipe}
+        </div>
+        <div class="result-actions">
+          <button class="btn quiet grow" type="button" data-act="veto">Not feeling it, 86 it</button>
+          <button class="btn quiet" type="button" data-act="edit">Change answers</button>
+          <button class="btn link" type="button" data-act="restart">Start over</button>
+        </div>
+        ${alts.length ? `
+        <div class="alts">
+          <h3>Also on the table</h3>
+          <div class="alt-list">
+            ${alts.map((r, i) => `<button class="alt" type="button" data-alt="${i + 1}"><b>${esc(r.d.n)}</b><small>${esc(r.d.c)} · ${["light", "medium", "heavy"][r.d.w - 1]}</small></button>`).join("")}
+          </div>
+        </div>` : ""}
+      </section>`;
+  }
+
+  function render() {
+    if (state.step < 0) renderIntro();
+    else if (state.step < Q.length) renderQuestion();
+    else renderResult();
+    window.scrollTo({ top: 0 });
+  }
+
+  // ---------- Actions ----------
+  function go(step) {
+    state.step = step;
+    if (step >= Q.length) rank();
+    render();
+  }
+  function restart() {
+    state.A = { flavors: [], diet: [] };
+    state.vetoed = [];
+    state.random = false;
+    go(-1);
+  }
+  let advanceTimer = null;
+  function choose(i) {
+    const q = Q[state.step];
+    if (!q) return;
+    if (q.multi) {
+      const o = q.opts[i];
+      if (!o) return;
+      const arr = state.A[q.id];
+      const at = arr.indexOf(o.v);
+      at >= 0 ? arr.splice(at, 1) : arr.push(o.v);
+      render();
+      return;
+    }
+    if (i !== -1 && !q.opts[i]) return;
+    state.A[q.id] = i === -1 ? null : q.opts[i].v;
+    renderQuestion();
+    clearTimeout(advanceTimer);
+    advanceTimer = setTimeout(() => go(state.step + 1), 170);
+  }
+
+  app.addEventListener("click", e => {
+    const t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.i !== undefined) return choose(Number(t.dataset.i));
+    if (t.dataset.alt !== undefined) {
+      const pick = live()[Number(t.dataset.alt)];
+      state.ranked = [pick, ...state.ranked.filter(r => r !== pick)];
+      return renderResult();
+    }
+    switch (t.dataset.act) {
+      case "start": state.random = false; return go(0);
+      case "random": state.A = { flavors: [], diet: [] }; state.random = true; return go(Q.length);
+      case "next": clearTimeout(advanceTimer); return go(state.step + 1);
+      case "back": clearTimeout(advanceTimer); return go(state.step - 1);
+      case "veto": state.vetoed.push(live()[0].d); return renderResult();
+      case "edit": state.random = false; return go(0);
+      case "restart": return restart();
+    }
+  });
+  document.getElementById("home").addEventListener("click", restart);
+
+  document.addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const q = Q[state.step];
+    if (!q) return;
+    const n = Number(e.key);
+    if (n >= 1 && n <= 9) {
+      if (n <= q.opts.length) choose(n - 1);
+      else if (!q.multi && n === q.opts.length + 1) choose(-1);
+      e.preventDefault();
+    } else if (e.key === "Enter" && q.multi && !(e.target instanceof HTMLButtonElement)) {
+      go(state.step + 1);
+      e.preventDefault();
+    } else if (e.key === "Backspace" || e.key === "ArrowLeft") {
+      clearTimeout(advanceTimer);
+      go(state.step - 1);
+      e.preventDefault();
+    }
+  });
+
+  render();
+})();
+</script>
